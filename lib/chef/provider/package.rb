@@ -304,29 +304,15 @@ class Chef
         end
       end
 
-      # Check the current_version against either the candidate_version or the new_version
-      #
-      # For some reason the windows provider subclasses this (to implement passing Arrays to
-      # versions for some reason other than multipackage stuff, which is mildly terrifying).
-      #
-      # This MUST have 'equality' semantics -- the exact thing matches the exact thing.
-      #
-      # The name is not just bad, but i find it completely misleading, consider:
-      #
-      #    target_version_already_installed?(current_version, new_version)
-      #    target_version_already_installed?(current_version, candidate_version)
-      #
-      # Which of those is the 'target_version'?  I'd say the new_version and I'm confused when
-      # i see it called with the candidate_version.
-      #
-      # `version_equals?(v1, v2)` would be a better name.
-      #
+
       # Note that most likely we need a spaceship operator on versions that subclasses can implement
       # and we should have `version_compare(v1, v2)` that returns `v1 <=> v2`.
+
+      # This method performs a strict equality check between two strings representing version numbers
       #
-      def target_version_already_installed?(current_version, target_version)
-        return false unless current_version && target_version
-        current_version == target_version
+      def version_equals?(v1, v2)
+        return false unless v1 && v2
+        v1 == v2
       end
 
       # Check the current_version against the new_resource.version, possibly using fuzzy
@@ -337,7 +323,7 @@ class Chef
       # `version_satisfied_by?(version, constraint)` might be a better name to make this generic.
       #
       def version_requirement_satisfied?(current_version, new_version)
-        target_version_already_installed?(current_version, new_version)
+        version_equals?(current_version, new_version)
       end
 
       # @todo: extract apt/dpkg specific preseeding to a helper class
@@ -439,7 +425,7 @@ class Chef
             each_package do |package_name, new_version, current_version, candidate_version|
               case action
               when :upgrade
-                if target_version_already_installed?(current_version, new_version)
+                if version_equals?(current_version, new_version)
                   # this is an odd use case
                   Chef::Log.debug("#{new_resource} #{package_name} #{new_version} is already installed -- you are equality pinning with an :upgrade action, this may be deprecated in the future")
                   target_version_array.push(nil)
