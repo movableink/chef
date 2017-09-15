@@ -305,6 +305,35 @@ class Chef
       end
 
 
+      # Check the current_version against either the candidate_version or the new_version		 +
+      #
+      # For some reason the windows provider subclasses this (to implement passing Arrays to
+      # versions for some reason other than multipackage stuff, which is mildly terrifying).
+      #
+      # This MUST have 'equality' semantics -- the exact thing matches the exact thing.
+      #
+      # The name is not just bad, but i find it completely misleading, consider:
+      #
+      #    target_version_already_installed?(current_version, new_version)
+      #    target_version_already_installed?(current_version, candidate_version)
+      #
+      # Which of those is the 'target_version'?  I'd say the new_version and I'm confused when
+      # i see it called with the candidate_version.
+      #
+      # `version_equals?(v1, v2)` would be a better name.
+      #
+      # Note that most likely we need a spaceship operator on versions that subclasses can implement
+      # and we should have `version_compare(v1, v2)` that returns `v1 <=> v2`.
+
+      # This method performs a strict equality check between two strings representing version numbers
+      #
+      # This function will eventually be deprecated in favour of the below version_equals function.
+
+      def target_version_already_installed?(current_version, target_version)
+        version_equals?(current_version,target_version)
+      end
+
+
       # Note that most likely we need a spaceship operator on versions that subclasses can implement
       # and we should have `version_compare(v1, v2)` that returns `v1 <=> v2`.
 
@@ -429,7 +458,7 @@ class Chef
                   # this is an odd use case
                   Chef::Log.debug("#{new_resource} #{package_name} #{new_version} is already installed -- you are equality pinning with an :upgrade action, this may be deprecated in the future")
                   target_version_array.push(nil)
-                elsif target_version_already_installed?(current_version, candidate_version)
+                elsif version_equals?(current_version, candidate_version)
                   Chef::Log.debug("#{new_resource} #{package_name} #{candidate_version} is already installed")
                   target_version_array.push(nil)
                 elsif candidate_version.nil?
