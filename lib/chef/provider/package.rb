@@ -344,6 +344,21 @@ class Chef
         v1 == v2
       end
 
+      # This function compares two version numbers and returns 'spaceship operator' style results, ie:
+      # if v1 < v2 then return -1
+      # if v1 = v2 then return  0
+      # if v1 > v2 then return  1
+      # if v1 and v2 are not comparable then return nil
+      #
+      # By default, this function will use Gem::Version comparison. Subclasses can reimplement this method
+      # for package-management system specific versions.
+      def version_compare(v1,v2)
+        gem_v1 = Gem::Version.new(v1)
+        gem_v2 = Gem::Version.new(v2)
+
+        gem_v1 <=> gem_v2
+      end
+
       # Check the current_version against the new_resource.version, possibly using fuzzy
       # matching criteria.
       #
