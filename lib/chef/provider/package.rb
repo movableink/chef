@@ -479,6 +479,9 @@ class Chef
                 elsif candidate_version.nil?
                   Chef::Log.debug("#{new_resource} #{package_name} has no candidate_version to upgrade to")
                   target_version_array.push(nil)
+                elsif version_compare(current_version,candidate_version) == 1
+                  Chef::Log.debug("#{new_resource} #{package_name} has installed version #{current_version}, which is newer than available version #{candidate_version}. Skipping...)")
+                  target_version_array.push(nil)
                 else
                   Chef::Log.debug("#{new_resource} #{package_name} is out of date, will upgrade to #{candidate_version}")
                   target_version_array.push(candidate_version)
